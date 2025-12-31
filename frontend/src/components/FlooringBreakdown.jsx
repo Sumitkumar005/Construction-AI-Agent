@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Home, Square, Layers } from 'lucide-react'
 
 export default function FlooringBreakdown({ flooringData }) {
   const [expanded, setExpanded] = useState(true)
+  const [showTypeBreakdown, setShowTypeBreakdown] = useState(true)
   
   if (!flooringData || !flooringData.total_sqft) {
     return null
@@ -35,7 +36,7 @@ export default function FlooringBreakdown({ flooringData }) {
 
       {expanded && (
         <div className="p-6 bg-white">
-          {/* Summary Cards */}
+          {/* Summary Card - Total Area Only */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="text-sm text-blue-600 font-medium mb-1">Total Area</div>
@@ -44,33 +45,6 @@ export default function FlooringBreakdown({ flooringData }) {
               </div>
               <div className="text-xs text-blue-600 mt-1">sqft</div>
             </div>
-            {by_type?.hardwood_sqft > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <div className="text-sm text-amber-600 font-medium mb-1">Hardwood</div>
-                <div className="text-2xl font-bold text-amber-900">
-                  {by_type.hardwood_sqft.toLocaleString()}
-                </div>
-                <div className="text-xs text-amber-600 mt-1">sqft</div>
-              </div>
-            )}
-            {by_type?.tile_sqft > 0 && (
-              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
-                <div className="text-sm text-teal-600 font-medium mb-1">Tile</div>
-                <div className="text-2xl font-bold text-teal-900">
-                  {by_type.tile_sqft.toLocaleString()}
-                </div>
-                <div className="text-xs text-teal-600 mt-1">sqft</div>
-              </div>
-            )}
-            {by_type?.concrete_sqft > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="text-sm text-gray-600 font-medium mb-1">Concrete</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {by_type.concrete_sqft.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-600 mt-1">sqft</div>
-              </div>
-            )}
           </div>
 
           {/* Room-by-Room Breakdown */}
@@ -145,10 +119,18 @@ export default function FlooringBreakdown({ flooringData }) {
           {by_type && (
             <div>
               <div className="flex items-center mb-4">
-                <Square className="h-5 w-5 text-primary-600 mr-2" />
-                <h4 className="text-md font-semibold text-gray-900">Type-by-Type Breakdown</h4>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showTypeBreakdown}
+                    onChange={(e) => setShowTypeBreakdown(e.target.checked)}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+                  />
+                  <h4 className="text-md font-semibold text-gray-900 ml-3">Type-by-Type Breakdown</h4>
+                </label>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {showTypeBreakdown && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {by_type.hardwood_sqft > 0 && (
                   <div className="border border-gray-200 rounded-lg p-3">
                     <div className="text-xs text-gray-500 mb-1">Hardwood</div>
@@ -205,7 +187,8 @@ export default function FlooringBreakdown({ flooringData }) {
                     </div>
                   </div>
                 )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

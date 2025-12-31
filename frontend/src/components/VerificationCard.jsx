@@ -25,7 +25,7 @@ export default function VerificationCard({ verification }) {
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700">Overall Confidence</span>
           <span className="text-2xl font-bold text-gray-900">
-            {(verification.overall_confidence || 0) * 100}%
+            {((verification.overall_confidence || 0) * 100).toFixed(1)}%
           </span>
         </div>
         <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
@@ -57,7 +57,7 @@ export default function VerificationCard({ verification }) {
                     {checkName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </h4>
                   <p className="text-xs text-gray-600 mt-1">
-                    Confidence: {(checkResult.confidence || 0) * 100}%
+                    Confidence: {((checkResult.confidence || 0) * 100).toFixed(1)}%
                   </p>
                 </div>
               </div>

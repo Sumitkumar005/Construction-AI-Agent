@@ -121,7 +121,7 @@ export default function Results() {
               {results.success ? 'Analysis Completed Successfully' : 'Analysis Failed'}
             </p>
             <p className={`text-sm ${results.success ? 'text-green-700' : 'text-red-700'}`}>
-              Overall Confidence: {(verification.overall_confidence || 0) * 100}%
+              Overall Confidence: {((verification.overall_confidence || 0) * 100).toFixed(1)}%
             </p>
           </div>
         </div>

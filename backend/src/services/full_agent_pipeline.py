@@ -17,6 +17,8 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# Progress callback will be passed from takeoffs.py
+
 
 class FullAgentPipeline:
     """
@@ -48,8 +50,11 @@ class FullAgentPipeline:
         selected_trades: List[str],
         project_id: str,
         project_file_name: Optional[str] = None,
-        cancellation_check: Optional[Callable[[], bool]] = None
+        cancellation_check: Optional[Callable[[], bool]] = None,
+        progress_callback: Optional[Callable[[str, int, str], None]] = None
     ) -> Dict[str, Any]:
+        # Track last progress to ensure it only increases
+        last_progress = [0]  # Use list to allow modification in nested function
         """
         Process a takeoff through the full multi-agent pipeline.
         
@@ -79,10 +84,18 @@ class FullAgentPipeline:
         }
         
         try:
+            # Helper function to send progress updates (ensures increasing progress)
+            async def safe_progress_update(stage: str, progress: int, message: str):
+                if progress_callback and progress > last_progress[0]:
+                    last_progress[0] = progress
+                    await progress_callback(stage, progress, message)
+                    await asyncio.sleep(0.1)  # Small delay to ensure sequential processing
+            
             # ============================================
             # STAGE 1: EXTRACTION
             # ============================================
             logger.info("🔍 Stage 1: Document Extraction")
+            await safe_progress_update("extraction", 10, "Extracting document content...")
             if cancellation_check and cancellation_check():
                 raise asyncio.CancelledError("Processing cancelled")
             
@@ -108,6 +121,7 @@ class FullAgentPipeline:
             # STAGE 2: IMAGE EXTRACTION
             # ============================================
             logger.info("🖼️ Stage 2: Image Extraction")
+            await safe_progress_update("extraction", 20, "Extracting images from PDF...")
             image_paths = []
             try:
                 temp_base = Path("temp_images")
@@ -130,6 +144,7 @@ class FullAgentPipeline:
             if image_paths and self.moondream_service:
                 try:
                     logger.info("🌙 Stage 3: Moondream AI Analysis")
+                    await safe_progress_update("cv", 30, "Analyzing floor plan with Moondream AI...")
                     moondream_results = await self.moondream_service.extract_dimensions_from_image(
                         image_paths[0]
                     )
@@ -147,6 +162,7 @@ class FullAgentPipeline:
             if not moondream_results and settings.enable_cv_analysis and image_paths:
                 try:
                     logger.info("👁️ Stage 4: Computer Vision Analysis (Fallback)")
+                    await safe_progress_update("cv", 35, "Analyzing floor plan with Computer Vision...")
                     cv_results = await self.cv_agent.analyze_floor_plan(
                         image_paths[0],
                         analysis_type="full"
@@ -161,10 +177,17 @@ class FullAgentPipeline:
             # STAGE 5: TRADE QUANTITY EXTRACTION
             # ============================================
             logger.info("📊 Stage 5: Trade Quantity Extraction")
+            await safe_progress_update("quantity", 40, "Extracting trade quantities...")
             trade_results = {}
             confidence_scores = {}
             
-            for trade_str in selected_trades:
+            total_trades = len(selected_trades)
+            for idx, trade_str in enumerate(selected_trades):
+                # Calculate progress: 40% base + up to 20% for trades (40-60% range)
+                progress = 40 + int((idx + 1) / total_trades * 20)
+                # Ensure progress doesn't exceed 60% (next stage is 70%)
+                progress = min(progress, 60)
+                await safe_progress_update("quantity", progress, f"Extracting {trade_str} quantities...")
                 # Check for cancellation before each trade
                 if cancellation_check and cancellation_check():
                     raise asyncio.CancelledError("Processing cancelled")
@@ -204,6 +227,7 @@ class FullAgentPipeline:
                 
                 try:
                     logger.info("📚 Stage 6: Specification Reasoning (RAG)")
+                    await safe_progress_update("specs", 70, "Reasoning over construction specifications...")
                     
                     # Create query from extracted quantities
                     quantities_summary = self._summarize_quantities(trade_results)
@@ -235,6 +259,7 @@ class FullAgentPipeline:
             # STAGE 7: VERIFICATION
             # ============================================
             logger.info("✅ Stage 7: Verification & Validation")
+            await safe_progress_update("verification", 85, "Verifying and validating results...")
             
             # Check for cancellation before verification
             if cancellation_check and cancellation_check():
@@ -243,7 +268,8 @@ class FullAgentPipeline:
             verification_results = await self.verification_agent.verify_extraction_results(
                 extraction_results=extraction_results,
                 quantities=trade_results,
-                cv_results=cv_results
+                cv_results=cv_results,
+                selected_trades=selected_trades  # Pass selected trades
             )
             pipeline_results["verification"] = verification_results
             
@@ -253,6 +279,7 @@ class FullAgentPipeline:
             # ============================================
             # FINALIZE
             # ============================================
+            await safe_progress_update("complete", 100, "Processing complete!")
             pipeline_results["metadata"]["end_time"] = datetime.now()
             pipeline_results["metadata"]["processing_time"] = (
                 pipeline_results["metadata"]["end_time"] - pipeline_results["metadata"]["start_time"]

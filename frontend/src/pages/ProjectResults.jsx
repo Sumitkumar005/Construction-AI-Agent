@@ -67,12 +67,12 @@ export default function ProjectResults() {
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
           <AlertTriangle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
           <p className="text-lg font-medium text-yellow-900">Project not found</p>
-          <Link
-            to="/projects"
+          <button
+            onClick={() => navigate('/projects', { replace: true })}
             className="mt-4 inline-block px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
             Back to Projects
-          </Link>
+          </button>
         </div>
       </div>
     )
@@ -85,13 +85,13 @@ export default function ProjectResults() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header */}
       <div className="mb-8">
-        <Link
-          to="/projects"
+        <button
+          onClick={() => navigate('/projects', { replace: true })}
           className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Projects
-        </Link>
+        </button>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{project.name || project.file_name}</h1>

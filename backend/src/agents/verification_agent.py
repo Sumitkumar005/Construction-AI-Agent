@@ -26,7 +26,8 @@ class VerificationAgent:
         self,
         extraction_results: Dict,
         quantities: Dict,
-        cv_results: Optional[Dict] = None
+        cv_results: Optional[Dict] = None,
+        selected_trades: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Comprehensive verification of extraction and quantity results.
@@ -64,7 +65,8 @@ class VerificationAgent:
             # Check 3: Completeness check
             completeness_check = await self._check_completeness(
                 extraction_results,
-                quantities
+                quantities,
+                selected_trades
             )
             verification_report["checks"]["completeness"] = completeness_check
             
@@ -96,14 +98,20 @@ class VerificationAgent:
             "doors": {"min": 0, "max": 500},
             "windows": {"min": 0, "max": 1000},
             "rooms": {"min": 1, "max": 100},
-            "hardware": {"min": 0, "max": 2000}
+            "hardware": {"min": 0, "max": 2000},
+            "flooring": {"min": 0, "max": 50000},  # sqft
+            "painting": {"min": 0, "max": 50000},  # sqft
+            "drywall": {"min": 0, "max": 10000},  # sheets
+            "concrete": {"min": 0, "max": 10000},  # cubic yards
+            "doors_windows": {"min": 0, "max": 1000}  # count
         }
         
         results = {}
         all_within_bounds = True
         
         for category, data in quantities.items():
-            total = data.get("total_count", 0)
+            # Check both total_count and total_sqft
+            total = data.get("total_count", 0) or data.get("total_sqft", 0)
             category_bounds = bounds.get(category, {"min": 0, "max": 10000})
             
             is_valid = (
@@ -180,11 +188,18 @@ class VerificationAgent:
     async def _check_completeness(
         self,
         extraction_results: Dict,
-        quantities: Dict
+        quantities: Dict,
+        selected_trades: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Check if extraction is complete (all expected categories present)."""
         
-        expected_categories = ["doors", "windows", "hardware", "finishes"]
+        # Use selected_trades if provided, otherwise use default expected categories
+        if selected_trades:
+            expected_categories = selected_trades
+        else:
+            # Default expected categories (for backward compatibility)
+            expected_categories = ["doors", "windows", "hardware", "finishes"]
+        
         found_categories = list(quantities.keys())
         
         missing_categories = [
@@ -192,7 +207,11 @@ class VerificationAgent:
             if cat not in found_categories
         ]
         
-        completeness_score = len(found_categories) / len(expected_categories)
+        # Calculate completeness based on selected trades
+        if expected_categories:
+            completeness_score = len(found_categories) / len(expected_categories)
+        else:
+            completeness_score = 1.0 if found_categories else 0.0
         
         return {
             "expected_categories": expected_categories,
@@ -200,7 +219,7 @@ class VerificationAgent:
             "missing_categories": missing_categories,
             "completeness_score": completeness_score,
             "is_complete": len(missing_categories) == 0,
-            "confidence": completeness_score
+            "confidence": completeness_score if completeness_score > 0 else 0.25  # Minimum 25% if no matches
         }
     
     async def _check_logical_consistency(self, quantities: Dict) -> Dict[str, Any]:

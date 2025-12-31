@@ -8,11 +8,11 @@ import ProgressIndicator from '../components/ProgressIndicator'
 const STAGES = [
   { key: 'upload', label: 'Upload', icon: CheckCircle },
   { key: 'extraction', label: 'Extraction', icon: Loader2 },
-  { key: 'quantity', label: 'Quantity Take-off', icon: Loader2 },
-  { key: 'cv', label: 'CV Analysis', icon: Loader2 },
-  { key: 'specs', label: 'Spec Reasoning', icon: Loader2 },
-  { key: 'verification', label: 'Verification', icon: Loader2 },
-  { key: 'expert_review', label: 'Expert Review', icon: Loader2 },
+  { key: 'quantity', label: 'Quantity', icon: Loader2 },
+  { key: 'cv', label: 'CV', icon: Loader2 },
+  { key: 'specs', label: 'Spec', icon: Loader2 },
+  { key: 'verification', label: 'Verify', icon: Loader2 },
+  { key: 'expert_review', label: 'Expert', icon: Loader2 },
   { key: 'complete', label: 'Complete', icon: CheckCircle },
 ]
 
@@ -46,10 +46,23 @@ export default function ProjectProcessing() {
   useEffect(() => {
     // Handle WebSocket messages
     if (lastMessage && lastMessage.type === 'progress') {
-      setProgress({
-        stage: lastMessage.stage,
-        progress: lastMessage.progress,
-        message: lastMessage.message
+      setProgress(prev => {
+        const newProgressValue = Math.max(0, Math.min(100, lastMessage.progress || 0))
+        // Only update if new progress is greater than or equal to current progress
+        // This prevents progress from jumping backwards
+        if (newProgressValue >= prev.progress) {
+          return {
+            stage: lastMessage.stage || prev.stage,
+            progress: newProgressValue,
+            message: lastMessage.message || prev.message || 'Processing...'
+          }
+        }
+        // If progress is lower, keep current progress but update stage/message if provided
+        return {
+          stage: lastMessage.stage || prev.stage,
+          progress: prev.progress,
+          message: lastMessage.message || prev.message || 'Processing...'
+        }
       })
     }
   }, [lastMessage])

@@ -89,16 +89,35 @@ async def process_takeoff_async(project_id: str):
         # ============================================
         logger.info(f"🚀 Starting full multi-agent pipeline for project {project_id}")
         
+        # Send initial upload progress
+        try:
+            from src.api.main import send_progress_update
+            client_id = f"client_{project_id}"
+            await send_progress_update(client_id, "upload", 5, "File uploaded, starting processing...")
+        except Exception as e:
+            logger.debug(f"Could not send initial progress: {e}")
+        
         # Create cancellation check function
         def check_cancelled():
             return project_service.is_cancelled(project_id)
+        
+        # Create progress callback for WebSocket updates
+        async def progress_callback(stage: str, progress: int, message: str):
+            try:
+                from src.api.main import send_progress_update
+                client_id = f"client_{project_id}"
+                await send_progress_update(client_id, stage, progress, message)
+                logger.debug(f"Progress: {stage} - {progress}% - {message}")
+            except Exception as e:
+                logger.debug(f"Could not send progress update: {e}")
         
         pipeline_results = await full_pipeline.process_takeoff(
             pdf_path=project.file_path,
             selected_trades=project.selected_trades,
             project_id=project_id,
             project_file_name=project.file_name,
-            cancellation_check=check_cancelled
+            cancellation_check=check_cancelled,
+            progress_callback=progress_callback
         )
         
         # Check for cancellation during pipeline
