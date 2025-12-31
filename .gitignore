@@ -1,0 +1,120 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Uploads
+uploads/
+temp_images/
+backend/uploads/
+backend/reports/
+
+# Models
+*.pt
+*.pth
+*.onnx
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Vector DB data
+qdrant_data/
+
+# Temporary files
+tmp/
+temp/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Reference/Sensitive Files
+websitedataofQuickPlansAI.txt
+totolpeplelinkedinproflieinthiscompanyforrefence.txt
+JD.txt
+FLOOR_PLAN_GENERATION_PROMPT.md
+INTERVIEW_PREP_COMPLETE.md
+DATABASE_AND_SECURITY_ANALYSIS.md
+COMPLETE_SYSTEM_ANALYSIS.md
+SECURITY_FIXES_NEEDED.md
+FINAL_PROJECT_REVIEW.md
+PROJECT_SUMMARY.md
+PROJECT_REQUIREMENTS_ANALYSIS.md
+ARCHITECTURE.md
+arch.txt
+
+# Test Scripts
+backend/scripts/test_*.py
+backend/scripts/check_*.py
+backend/scripts/list_*.py
+backend/scripts/fix_*.ps1
+backend/scripts/fix_*.sh
+
+# Example/Test Files
+backend/EXAMPLE_EXPECTED_RESULT.json
+backend/EXPECTED_RESULT_50x30_FLOOR_PLAN.json
+example_usage.py
+Untitled
+
+# Exports (already generated)
+backend/exports/
+backend/reports/
+backend/data/
+
+# Package files
+backend/package-lock.json
+
+# Model files (large)
