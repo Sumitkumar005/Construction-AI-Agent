@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Download, ArrowLeft, CheckCircle, AlertTriangle, FileSpreadsheet, FileText, File, Clock } from 'lucide-react'
+import { Download, ArrowLeft, CheckCircle, AlertTriangle, FileSpreadsheet, FileText, File, Clock, Zap, Home, Ruler } from 'lucide-react'
 import { getProject, getTakeoff, exportTakeoff } from '../services/api'
 import QuantityChart from '../components/QuantityChart'
 import VerificationCard from '../components/VerificationCard'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ConfidenceGauge from '../components/ConfidenceGauge'
 
 export default function ProjectResults() {
   const { id } = useParams()
@@ -128,35 +129,98 @@ export default function ProjectResults() {
         </div>
       </div>
 
-      {/* Status Card */}
+      {/* Status Card with Processing Time & Confidence */}
       {takeoff && (
         <div className={`rounded-xl shadow-lg p-6 mb-6 ${
           takeoff.status === 'completed'
             ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200'
             : 'bg-gradient-to-r from-blue-50 to-primary-50 border border-blue-200'
         }`}>
-          <div className="flex items-center">
-            {takeoff.status === 'completed' ? (
-              <CheckCircle className="h-8 w-8 text-green-600 mr-4" />
-            ) : (
-              <AlertTriangle className="h-8 w-8 text-blue-600 mr-4" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {takeoff.status === 'completed' ? (
+                <CheckCircle className="h-8 w-8 text-green-600 mr-4" />
+              ) : (
+                <AlertTriangle className="h-8 w-8 text-blue-600 mr-4" />
+              )}
+              <div>
+                <p className={`font-semibold text-lg ${
+                  takeoff.status === 'completed' ? 'text-green-900' : 'text-blue-900'
+                }`}>
+                  {takeoff.status === 'completed' ? 'Takeoff Completed' : 'Takeoff in Progress'}
+                </p>
+                <p className={`text-sm mt-1 ${
+                  takeoff.status === 'completed' ? 'text-green-700' : 'text-blue-700'
+                }`}>
+                  {takeoff.processing_time_seconds && (
+                    <span className="inline-flex items-center">
+                      <Zap className="h-4 w-4 mr-1" />
+                      {takeoff.processing_time_seconds < 60 
+                        ? `Processed in ${takeoff.processing_time_seconds.toFixed(1)}s`
+                        : `Processed in ${(takeoff.processing_time_seconds / 60).toFixed(1)}min`
+                      }
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+            {/* Animated Confidence Gauge */}
+            {verification.overall_confidence && (
+              <ConfidenceGauge confidence={(verification.overall_confidence * 100)} size={100} />
             )}
-            <div>
-              <p className={`font-semibold text-lg ${
-                takeoff.status === 'completed' ? 'text-green-900' : 'text-blue-900'
-              }`}>
-                {takeoff.status === 'completed' ? 'Takeoff Completed' : 'Takeoff in Progress'}
-              </p>
-              <p className={`text-sm mt-1 ${
-                takeoff.status === 'completed' ? 'text-green-700' : 'text-blue-700'
-              }`}>
-                Overall Confidence: {((verification.overall_confidence || 0) * 100).toFixed(1)}%
-                {takeoff.processing_time_seconds && (
-                  <span className="ml-4">
-                    • Processed in {Math.round(takeoff.processing_time_seconds / 60)} minutes
-                  </span>
-                )}
-              </p>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Stats Card */}
+      {takeoff && quantities && Object.keys(quantities).length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Total Area Analyzed */}
+          {(() => {
+            const totalSqft = Object.values(quantities).reduce((sum, trade) => {
+              if (trade.total_sqft) return sum + (trade.total_sqft || 0)
+              return sum
+            }, 0)
+            return totalSqft > 0 ? (
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-700 mb-1">Total Area Analyzed</p>
+                    <p className="text-2xl font-bold text-blue-900">{totalSqft.toLocaleString()} sqft</p>
+                  </div>
+                  <Ruler className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+            ) : null
+          })()}
+          
+          {/* Rooms Detected */}
+          {(() => {
+            const roomCount = Object.values(quantities).reduce((count, trade) => {
+              if (trade.rooms) return count + Object.keys(trade.rooms).length
+              return count
+            }, 0)
+            return roomCount > 0 ? (
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-purple-700 mb-1">Rooms Detected</p>
+                    <p className="text-2xl font-bold text-purple-900">{roomCount}</p>
+                  </div>
+                  <Home className="h-8 w-8 text-purple-600" />
+                </div>
+              </div>
+            ) : null
+          })()}
+          
+          {/* Trades Processed */}
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-700 mb-1">Trades Processed</p>
+                <p className="text-2xl font-bold text-green-900">{Object.keys(quantities).length}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
           </div>
         </div>
