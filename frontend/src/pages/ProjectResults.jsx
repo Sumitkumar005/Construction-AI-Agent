@@ -7,6 +7,8 @@ import VerificationCard from '../components/VerificationCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfidenceGauge from '../components/ConfidenceGauge'
 import TechStackBadge from '../components/TechStackBadge'
+import AgentExecutionLog from '../components/AgentExecutionLog'
+import TimeSavedCard from '../components/TimeSavedCard'
 
 export default function ProjectResults() {
   const { id } = useParams()
@@ -173,7 +175,15 @@ export default function ProjectResults() {
         </div>
       )}
 
-      {/* Quick Stats Card */}
+          {/* Time Saved & Agent Execution */}
+          {takeoff && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <TimeSavedCard processingTimeSeconds={takeoff.processing_time_seconds} />
+              <AgentExecutionLog metadata={takeoff.metadata} />
+            </div>
+          )}
+
+          {/* Quick Stats Card */}
       {takeoff && quantities && Object.keys(quantities).length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {/* Total Area Analyzed */}
