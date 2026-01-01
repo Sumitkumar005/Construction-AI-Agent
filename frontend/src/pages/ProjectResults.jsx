@@ -9,6 +9,7 @@ import ConfidenceGauge from '../components/ConfidenceGauge'
 import TechStackBadge from '../components/TechStackBadge'
 import AgentExecutionLog from '../components/AgentExecutionLog'
 import TimeSavedCard from '../components/TimeSavedCard'
+import SystemCapabilities from '../components/SystemCapabilities'
 
 export default function ProjectResults() {
   const { id } = useParams()
@@ -263,9 +264,12 @@ export default function ProjectResults() {
             <VerificationCard verification={verification} />
           </div>
 
-          {/* Tech Stack Badge */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-            <TechStackBadge />
+          {/* Tech Stack & Capabilities */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+              <TechStackBadge />
+            </div>
+            <SystemCapabilities />
           </div>
         </>
       )}
