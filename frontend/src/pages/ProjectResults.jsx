@@ -6,6 +6,7 @@ import QuantityChart from '../components/QuantityChart'
 import VerificationCard from '../components/VerificationCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfidenceGauge from '../components/ConfidenceGauge'
+import TechStackBadge from '../components/TechStackBadge'
 
 export default function ProjectResults() {
   const { id } = useParams()
@@ -247,9 +248,14 @@ export default function ProjectResults() {
           </div>
 
           {/* Verification Section */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Verification Results</h2>
             <VerificationCard verification={verification} />
+          </div>
+
+          {/* Tech Stack Badge */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <TechStackBadge />
           </div>
         </>
       )}

@@ -1,13 +1,13 @@
-import { CheckCircle, Loader2, AlertCircle } from 'lucide-react'
+import { CheckCircle, Loader2, AlertCircle, Brain, Eye, FileText, Sparkles, CheckSquare } from 'lucide-react'
 
 const stages = [
-  { key: 'upload', label: 'Upload', icon: CheckCircle },
-  { key: 'extraction', label: 'Extraction', icon: Loader2 },
-  { key: 'quantity', label: 'Quantity Take-off', icon: Loader2 },
-  { key: 'cv', label: 'CV Analysis', icon: Loader2 },
-  { key: 'specs', label: 'Spec Reasoning', icon: Loader2 },
-  { key: 'verification', label: 'Verification', icon: Loader2 },
-  { key: 'complete', label: 'Complete', icon: CheckCircle },
+  { key: 'upload', label: 'Upload', icon: CheckCircle, agent: null },
+  { key: 'extraction', label: 'Extraction', icon: FileText, agent: 'ExtractionAgent' },
+  { key: 'quantity', label: 'Quantity', icon: Sparkles, agent: 'TradeExtractor' },
+  { key: 'cv', label: 'CV', icon: Eye, agent: 'Moondream AI' },
+  { key: 'specs', label: 'Spec', icon: Brain, agent: 'RAG System' },
+  { key: 'verification', label: 'Verify', icon: CheckSquare, agent: 'VerificationAgent' },
+  { key: 'complete', label: 'Complete', icon: CheckCircle, agent: null },
 ]
 
 export default function ProgressIndicator({ stage, progress, message, connected }) {
@@ -67,11 +67,23 @@ export default function ProgressIndicator({ stage, progress, message, connected 
         })}
       </div>
 
-      {/* Current Message */}
+      {/* Current Message with Active Agent */}
       {message && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-900">{message}</p>
-          <p className="text-xs text-blue-700 mt-1">Progress: {progress}%</p>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">{message}</p>
+              {stages.find(s => s.key === stage)?.agent && (
+                <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Active: {stages.find(s => s.key === stage)?.agent}
+                </p>
+              )}
+            </div>
+            <div className="ml-4">
+              <span className="text-lg font-bold text-blue-700">{progress}%</span>
+            </div>
+          </div>
         </div>
       )}
     </div>
